@@ -4,16 +4,13 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { site, chapters } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Menu, Terminal, X } from "lucide-react";
+import { Menu, X, Terminal } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SoundToggle } from "@/components/SoundToggle";
 import { playTick } from "@/lib/audio";
-
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
-  // --- AUDIO STATE ---
   const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
@@ -29,11 +26,16 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Prevent scrolling when mobile menu is open
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "unset";
   }, [isOpen]);
+
+  const openCommandMenu = () => {
+    playTick(isMuted);
+    const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true });
+    document.dispatchEvent(event);
+  };
 
   return (
     <>
@@ -68,22 +70,24 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* 3. RIGHT: Actions (Command Menu, Sound, Theme, Mobile Menu) */}
+        {/* 3. RIGHT: Actions */}
         <div className="flex items-center gap-2 md:gap-3 z-50">
           
-                   {/* Command Menu Button */}
+          {/* Command Menu Button (Shows on Mobile as Icon, Desktop as pill) */}
           <button 
-            onClick={() => {
-              playTick(isMuted);
-              const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true });
-              document.dispatchEvent(event);
-            }}
-            className="hidden md:flex items-center gap-2 px-3 h-10 rounded-full glass text-muted hover:text-paper hover:border-ice/50 transition-all group"
+            onClick={openCommandMenu}
+            className="flex items-center gap-2 px-3 h-10 rounded-full glass text-muted hover:text-paper hover:border-ice/50 transition-all group"
             aria-label="Open System Console"
           >
-            <Terminal size={14} className="group-hover:text-ice transition-colors" />
-            <span className="text-xs font-data bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm">K</span>
+            <Terminal size={16} className="group-hover:text-ice transition-colors" />
+            <span className="hidden md:inline text-xs font-data bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm">K</span>
           </button>
+
+          {/* Hide these on mobile, show on desktop */}
+          <div className="hidden md:flex items-center gap-3">
+            <SoundToggle />
+            <ThemeToggle />
+          </div>
           
           {/* Mobile Menu Toggle */}
           <button 
@@ -128,6 +132,18 @@ export function Navbar() {
                 </motion.a>
               ))}
             </nav>
+
+            {/* Mobile Settings (Sound & Theme) */}
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+              className="mt-16 flex items-center gap-4 border-t border-glass-border pt-8"
+            >
+              <p className="meta text-muted">SYSTEM CONFIG</p>
+              <div className="flex gap-3 ml-auto">
+                <SoundToggle />
+                <ThemeToggle />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

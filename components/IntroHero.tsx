@@ -12,12 +12,12 @@ export function IntroHero() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLAnchorElement>(null);
 
-  // --- AUDIO HOOKS (Moved inside the component) ---
+  // --- AUDIO HOOKS ---
   const [isMuted, setIsMuted] = useState(true);
   
   useEffect(() => {
     const checkMute = () => setIsMuted(localStorage.getItem("site-muted") !== "false");
-    checkMute(); // Check on load
+    checkMute();
     window.addEventListener("sound-toggled", checkMute);
     return () => window.removeEventListener("sound-toggled", checkMute);
   }, []);
@@ -57,6 +57,18 @@ export function IntroHero() {
   return (
     <section id="hero" className="relative min-h-screen flex flex-col justify-center overflow-hidden grain">
       
+      {/* 👇 GIANT BACKGROUND NAME WATERMARK 👇 */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+        <motion.h2 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 0.03, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="text-[28vw] md:text-[22vw] font-shout font-black uppercase text-paper whitespace-nowrap leading-none tracking-tighter"
+        >
+          {site.name.split(" ").slice(1).join(" ") || "S"}
+        </motion.h2>
+      </div>
+
       {/* Mouse Spotlight */}
       {mousePos.x !== 0 && (
         <div
@@ -68,7 +80,7 @@ export function IntroHero() {
       )}
 
       {/* Subtle background glow */}
-      <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
       <div className="container-signal relative z-10 pt-20">
         
@@ -151,7 +163,7 @@ export function IntroHero() {
             ref={buttonRef}
             onMouseMove={handleMagneticMove}
             onMouseLeave={handleMagneticLeave}
-            onMouseEnter={() => playTick(isMuted)} // <-- ADDED SOUND HERE
+            onMouseEnter={() => playTick(isMuted)}
             className="group relative flex items-center gap-3 bg-paper text-ink px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all duration-300 hover:bg-lime"
           >
             Explore My World
@@ -161,7 +173,7 @@ export function IntroHero() {
           {/* Secondary CTA */}
           <a 
             href="#contact"
-            onMouseEnter={() => playTick(isMuted)} // <-- ADDED SOUND HERE
+            onMouseEnter={() => playTick(isMuted)}
             className="group relative font-data text-xs uppercase tracking-widest text-muted hover:text-paper transition-colors pb-1"
           >
             Let's Connect
@@ -175,7 +187,7 @@ export function IntroHero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-10"
       >
         <span className="meta text-[10px]">SCROLL</span>
         <motion.div
