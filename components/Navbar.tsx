@@ -8,10 +8,12 @@ import { Menu, X, Terminal } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SoundToggle } from "@/components/SoundToggle";
 import { playTick } from "@/lib/audio";
+
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [activeSection, setActiveSection] = useState("hero");
 
   useEffect(() => {
     const checkMute = () => setIsMuted(localStorage.getItem("site-muted") !== "false");
@@ -24,6 +26,27 @@ export function Navbar() {
     const handleScroll = () => setIsScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // 🚨 SLIDING PILL LOGIC: Track which section is currently on screen
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -60% 0px" } // Trigger when section is in the top 40% of screen
+    );
+
+    chapters.forEach((chapter) => {
+      const el = document.getElementById(chapter.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -50,55 +73,72 @@ export function Navbar() {
           {site.monogram}
         </a>
 
-        {/* 2. CENTER: Desktop Navigation */}
+        {/* 2. CENTER: Sliding Navigation Pill */}
         <nav 
           className={cn(
-            "hidden md:flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-500 absolute left-1/2 -translate-x-1/2",
-            isScrolled ? "glass shadow-lg" : "bg-transparent"
+            "hidden md:flex items-center gap-1 p-1 rounded-full transition-all duration-500 absolute left-1/2 -translate-x-1/2 border border-glass-border/50",
+            isScrolled ? "glass shadow-lg backdrop-blur-2xl" : "bg-ink/20 backdrop-blur-md"
           )}
         >
-          {chapters.slice(1).map((chapter) => (
-            <a 
-              key={chapter.id} 
-              href={`#${chapter.id}`} 
-              onClick={() => playTick(isMuted)}
-              className="px-4 py-1.5 text-sm font-medium text-muted hover:text-paper transition-colors rounded-full relative group"
-            >
-              {chapter.slug}
-              <span className="absolute inset-0 bg-glass-border opacity-0 group-hover:opacity-100 rounded-full transition-opacity duration-300 -z-10" />
-            </a>
-          ))}
+          {chapters.slice(1).map((chapter) => {
+            const isActive = activeSection === chapter.id;
+            
+            return (
+              <a 
+                key={chapter.id} 
+                href={`#${chapter.id}`} 
+                onClick={() => {
+                  playTick(isMuted);
+                  setActiveSection(chapter.id);
+                }}
+                className={cn(
+                  "relative px-4 py-1.5 text-[10px] font-data uppercase tracking-[0.15em] transition-colors rounded-full z-10",
+                  isActive ? "text-ink font-bold" : "text-muted hover:text-paper"
+                )}
+              >
+                {/* 🚨 THE SLIDING PILL BACKGROUND 🚨 */}
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-pill"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="absolute inset-0 bg-paper rounded-full -z-10 shadow-[0_0_15px_rgba(232,234,242,0.3)]"
+                  />
+                )}
+                
+                {chapter.slug}
+              </a>
+            );
+          })}
         </nav>
 
         {/* 3. RIGHT: Actions */}
-        <div className="flex items-center gap-2 md:gap-3 z-50">
+        <div className="flex items-center gap-2 z-50">
           
-          {/* Command Menu Button (Shows on Mobile as Icon, Desktop as pill) */}
+          {/* Command Menu Button */}
           <button 
             onClick={openCommandMenu}
-            className="flex items-center gap-2 px-3 h-10 rounded-full glass text-muted hover:text-paper hover:border-ice/50 transition-all group"
+            className="flex items-center gap-2 px-3 h-9 rounded-full glass text-muted hover:text-paper hover:border-ice/50 transition-all group"
             aria-label="Open System Console"
           >
-            <Terminal size={16} className="group-hover:text-ice transition-colors" />
-            <span className="hidden md:inline text-xs font-data bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm">K</span>
+            <Terminal size={14} className="group-hover:text-ice transition-colors" />
+            <span className="hidden md:inline font-data text-[9px] tracking-widest bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm">K</span>
           </button>
 
-          {/* Hide these on mobile, show on desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             <SoundToggle />
             <ThemeToggle />
           </div>
           
           {/* Mobile Menu Toggle */}
           <button 
-            className="md:hidden glass w-10 h-10 flex items-center justify-center rounded-full text-paper"
+            className="md:hidden glass w-9 h-9 flex items-center justify-center rounded-full text-paper"
             onClick={() => {
               setIsOpen(!isOpen);
               playTick(isMuted);
             }}
             aria-label="Toggle menu"
           >
-            {isOpen ? <X size={20} /> : <Menu size={20} />}
+            {isOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </header>
@@ -127,18 +167,18 @@ export function Navbar() {
                   transition={{ delay: i * 0.1, duration: 0.4 }}
                   className="text-4xl font-shout uppercase text-paper hover:text-ice transition-colors flex items-center gap-4"
                 >
-                  <span className="meta">{chapter.index}</span>
+                  <span className="font-data text-xs tracking-widest text-muted">{chapter.index}</span>
                   {chapter.slug}
                 </motion.a>
               ))}
             </nav>
 
-            {/* Mobile Settings (Sound & Theme) */}
+            {/* Mobile Settings */}
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
               className="mt-16 flex items-center gap-4 border-t border-glass-border pt-8"
             >
-              <p className="meta text-muted">SYSTEM CONFIG</p>
+              <p className="meta text-muted">SYSTEM_CONFIG</p>
               <div className="flex gap-3 ml-auto">
                 <SoundToggle />
                 <ThemeToggle />
