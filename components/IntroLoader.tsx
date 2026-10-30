@@ -21,47 +21,45 @@ export function IntroLoader() {
   ];
 
   useEffect(() => {
-    console.log("[IntroLoader] 🚀 Component mounted. Starting boot sequence...");
+    // 🚨 FAILSAFE: If the browser freezes, force close the loader after 4.5 seconds anyway.
+    const failsafe = setTimeout(() => {
+      setIsLoading(false);
+    }, 4500);
 
-    // 🎯 Use requestAnimationFrame for smooth, reliable animation
-    let startTime: number | null = null;
-    const duration = 3000; // Total loading time in ms (3 seconds)
-    let animationFrameId: number;
-
-    const animate = (timestamp: number) => {
-      if (startTime === null) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-      const newProgress = Math.min(Math.floor((elapsed / duration) * 100), 100);
+    // We use setInterval instead of requestAnimationFrame because 
+    // mobile browsers are much more reliable with intervals.
+    let currentProgress = 0;
+    
+    const interval = setInterval(() => {
+      currentProgress += Math.floor(Math.random() * 3) + 1; // +1, +2, or +3
       
-      setProgress(newProgress);
-
-      if (newProgress >= 100) {
-        console.log("[IntroLoader] ✅ Reached 100%. Showing ACCESS GRANTED.");
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        setProgress(100);
         setIsComplete(true);
+        clearInterval(interval);
         
-        // Wait 1.5s to show "ACCESS GRANTED", then close the loader
+        // Show "ACCESS GRANTED" for 1 second, then close
         setTimeout(() => {
-          console.log("[IntroLoader] 🎬 Closing loader...");
           setIsLoading(false);
-        }, 1500);
-        return; // Stop the animation loop
+        }, 1000);
+        
+        return;
       }
       
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
+      setProgress(currentProgress);
+    }, 30);
 
     // Glitch background text
     const glitchInterval = setInterval(() => {
       setGlitchText(
-        Array.from({ length: 40 }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join("")
+        Array.from({ length: 30 }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join("")
       );
-    }, 50);
+    }, 60);
 
     return () => {
-      console.log("[IntroLoader] 🧹 Cleanup");
-      cancelAnimationFrame(animationFrameId);
+      clearTimeout(failsafe);
+      clearInterval(interval);
       clearInterval(glitchInterval);
     };
   }, []);
@@ -80,14 +78,15 @@ export function IntroLoader() {
           initial={{ opacity: 1 }}
           exit={{ y: "-100%" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[200] bg-[#030407] flex flex-col items-center justify-center overflow-hidden"
+          // 👇 CHANGED TO h-[100dvh] for mobile stability
+          className="fixed inset-0 z-[200] bg-[#030407] flex flex-col items-center justify-center overflow-hidden h-[100dvh]"
         >
           {/* Background Grid */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(168,228,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(168,228,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
           {/* Glitch Text Background */}
           {!isComplete && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 font-data text-4xl md:text-8xl tracking-[1em] text-ice break-all select-none overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 font-data text-4xl tracking-[1em] text-ice break-all select-none overflow-hidden">
               {glitchText}
             </div>
           )}
@@ -96,7 +95,7 @@ export function IntroLoader() {
           <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-lg px-6">
             
             {/* SVG Ring */}
-            <div className="relative w-[280px] h-[280px] md:w-[350px] md:h-[350px] flex items-center justify-center">
+            <div className="relative w-[260px] h-[260px] flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
                 <motion.circle 
@@ -127,45 +126,33 @@ export function IntroLoader() {
               {/* Number Counter */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="flex items-baseline gap-1">
-                  <span className={`font-shout font-black text-[80px] md:text-[100px] leading-none tabular-nums tracking-tighter transition-colors duration-300 ${isComplete ? "text-lime" : "text-paper"}`}>
+                  <span className={`font-shout font-black text-[70px] leading-none tabular-nums tracking-tighter transition-colors duration-300 ${isComplete ? "text-lime" : "text-paper"}`}>
                     {progress.toString().padStart(3, "0")}
                   </span>
-                  <span className={`font-data text-xl md:text-2xl transition-colors duration-300 ${isComplete ? "text-lime" : "text-ice"}`}>%</span>
+                  <span className={`font-data text-xl transition-colors duration-300 ${isComplete ? "text-lime" : "text-ice"}`}>%</span>
                 </div>
               </div>
             </div>
 
             {/* Status Message */}
-            <div className="mt-12 flex flex-col items-center gap-2 text-center">
+            <div className="mt-10 flex flex-col items-center gap-2 text-center">
               <motion.p 
                 key={currentStatus}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`font-data text-xs md:text-sm tracking-widest uppercase flex items-center gap-2 transition-colors duration-300 ${
+                className={`font-data text-[10px] tracking-widest uppercase flex items-center gap-2 transition-colors duration-300 ${
                   isComplete ? "text-lime font-bold" : progress >= 75 ? "text-violet" : "text-ice"
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isComplete ? "bg-lime" : "bg-ice"}`} />
                 {currentStatus}
               </motion.p>
-              
-              <p className="font-data text-[9px] text-muted tracking-widest">
-                {isComplete ? "REDIRECTING TO MAINFRAME..." : `SECURE CONNECTION // ${site.monogram}_OS`}
-              </p>
             </div>
           </div>
 
           {/* Decorative Brackets */}
-          <div className={`absolute top-8 left-8 w-12 h-12 border-t-2 border-l-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/20"}`} />
-          <div className={`absolute bottom-8 right-8 w-12 h-12 border-b-2 border-r-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/20"}`} />
-          
-          <div className="absolute bottom-8 left-8 font-data text-[10px] text-muted tracking-widest hidden md:block">
-            SYS.BOOT_SEQUENCE_INIT
-          </div>
-
-          <div className="absolute top-8 right-8 font-data text-[10px] text-muted tracking-widest hidden md:block">
-            {site.name.toUpperCase()} © {new Date().getFullYear()}
-          </div>
+          <div className={`absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/20"}`} />
+          <div className={`absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/20"}`} />
         </motion.div>
       )}
     </AnimatePresence>
