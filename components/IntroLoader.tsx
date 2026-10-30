@@ -6,7 +6,6 @@ import { site } from "@/lib/data";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]|;:,.<>?";
 
-// Helper to generate a random string of text
 const generateRandomText = (length: number) => {
   return Array.from({ length }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join("");
 };
@@ -15,7 +14,7 @@ export function IntroLoader() {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [columns, setColumns] = useState<{ text: string; duration: number; delay: number }[]>([]);
+  const [columns, setColumns] = useState<{ text: string; duration: number; delay: number; left: number }[]>([]);
 
   const statusMessages = [
     "ESTABLISHING CONNECTION...",
@@ -26,11 +25,12 @@ export function IntroLoader() {
   ];
 
   useEffect(() => {
-    // 1. Generate the Matrix columns ONCE on mount
-    const newColumns = Array.from({ length: 25 }).map(() => ({
-      text: generateRandomText(80), // Enough characters to fill the screen
-      duration: Math.random() * 4 + 4, // Between 4 and 8 seconds
-      delay: Math.random() * -8, // Random start position so it looks continuous
+    // 1. Generate 15 columns spread evenly across the screen
+    const newColumns = Array.from({ length: 15 }).map((_, i) => ({
+      text: generateRandomText(60),
+      duration: Math.random() * 4 + 4, // 4s to 8s
+      delay: Math.random() * -8, 
+      left: (i / 15) * 100, // 0% to 100% spread
     }));
     setColumns(newColumns);
 
@@ -40,13 +40,13 @@ export function IntroLoader() {
     // 3. Progress Counter
     let currentProgress = 0;
     const interval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 4) + 2; // Faster count
+      currentProgress += Math.floor(Math.random() * 4) + 2;
       if (currentProgress >= 100) {
         currentProgress = 100;
         setProgress(100);
         setIsComplete(true);
         clearInterval(interval);
-        setTimeout(() => setIsLoading(false), 1500); // Wait 1.5s at 100%
+        setTimeout(() => setIsLoading(false), 1500);
         return;
       }
       setProgress(currentProgress);
@@ -73,17 +73,16 @@ export function IntroLoader() {
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[200] bg-[#020305] flex flex-col items-center justify-center overflow-hidden h-[100dvh]"
         >
-          {/* ─── CSS MATRIX RAIN BACKGROUND (Now always visible) ─── */}
-          <div className="absolute inset-0 flex justify-center gap-2 md:gap-6 overflow-hidden opacity-30 pointer-events-none">
+          {/* ─── ABSOLUTE MATRIX RAIN (MOBILE FRIENDLY) ─── */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {columns.map((col, i) => (
               <div
                 key={i}
-                className="matrix-column font-data text-[10px] md:text-sm text-ice break-all select-none whitespace-nowrap"
+                className="matrix-column absolute top-0 text-[10px] md:text-xs text-ice/30 font-data w-4 md:w-6 h-full"
                 style={{
+                  left: `${col.left}%`,
                   animationDuration: `${col.duration}s`,
                   animationDelay: `${col.delay}s`,
-                  maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
-                  WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
                 }}
               >
                 {col.text}
@@ -91,17 +90,20 @@ export function IntroLoader() {
             ))}
           </div>
 
-          {/* ─── CRT SCANLINE OVERLAY ─── */}
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px] pointer-events-none z-10 opacity-40" />
+          {/* Fading Overlays for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#020305] via-transparent to-[#020305] pointer-events-none z-10 opacity-80" />
+          
+          {/* CRT Scanlines */}
+          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] pointer-events-none z-10 opacity-40" />
 
-          {/* Central Glow behind the ring */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-ice/10 rounded-full blur-[80px] z-0" />
+          {/* Central Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[350px] h-[250px] md:h-[350px] bg-ice/10 rounded-full blur-[80px] z-0" />
 
           {/* ─── CENTER HUD ─── */}
           <div className="relative z-20 flex flex-col items-center justify-center w-full max-w-lg px-6">
             
             {/* SVG Ring */}
-            <div className="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] flex items-center justify-center">
+            <div className="relative w-[250px] h-[250px] md:w-[300px] md:h-[300px] flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                 
@@ -134,16 +136,16 @@ export function IntroLoader() {
               {/* Number Counter */}
               <div className="absolute inset-0 flex flex-col items-center justify-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                 <div className="flex items-baseline gap-1">
-                  <span className={`font-shout font-black text-[75px] md:text-[90px] leading-none tabular-nums tracking-tighter transition-colors duration-300 ${isComplete ? "text-lime" : "text-paper"}`}>
+                  <span className={`font-shout font-black text-[65px] md:text-[85px] leading-none tabular-nums tracking-tighter transition-colors duration-300 ${isComplete ? "text-lime" : "text-paper"}`}>
                     {progress.toString().padStart(3, "0")}
                   </span>
-                  <span className={`font-data text-xl transition-colors duration-300 ${isComplete ? "text-lime" : "text-ice"}`}>%</span>
+                  <span className={`font-data text-lg md:text-xl transition-colors duration-300 ${isComplete ? "text-lime" : "text-ice"}`}>%</span>
                 </div>
               </div>
             </div>
 
             {/* Status Message Terminal */}
-            <div className="mt-12 flex flex-col items-center gap-3 text-center bg-[#020305]/80 px-6 py-3 rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
+            <div className="mt-10 flex flex-col items-center gap-3 text-center bg-[#020305]/80 px-6 py-3 rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
               <motion.p 
                 key={currentStatus}
                 initial={{ opacity: 0, y: 5 }}
@@ -159,10 +161,10 @@ export function IntroLoader() {
           </div>
 
           {/* Decorative HUD Brackets */}
-          <div className={`absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/10"} z-20`} />
-          <div className={`absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/10"} z-20`} />
+          <div className={`absolute top-6 left-6 w-12 h-12 border-t-2 border-l-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/10"} z-20`} />
+          <div className={`absolute bottom-6 right-6 w-12 h-12 border-b-2 border-r-2 transition-colors duration-500 ${isComplete ? "border-lime" : "border-white/10"} z-20`} />
           
-          <div className="absolute top-8 right-8 font-data text-[9px] text-ice/40 tracking-[0.3em] z-20 hidden md:block">
+          <div className="absolute top-6 right-6 font-data text-[8px] md:text-[9px] text-ice/40 tracking-[0.3em] z-20 hidden md:block">
             {site.name.toUpperCase()} // SECURE TERMINAL
           </div>
         </motion.div>
