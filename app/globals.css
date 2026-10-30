@@ -172,3 +172,20 @@ html.glitch-mode {
 html.glitch-mode body {
   pointer-events: none;
 }
+/* ─────────────── MATRIX RAIN ANIMATION ─────────────── */
+@keyframes matrix-rain {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100vh); }
+  100% { transform: translateY(100vh); }
+}
+
+.matrix-column {
+  animation: matrix-rain linear infinite;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.5em;
+}
