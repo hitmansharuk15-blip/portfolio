@@ -173,14 +173,33 @@ html.glitch-mode body {
   pointer-events: none;
 }
 
-/* ─────────────── MATRIX RAIN ANIMATION ─────────────── */
-@keyframes matrix-rain {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+/* ─────────────── HORIZONTAL DATA STREAM ─────────────── */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.matrix-column {
-  animation: matrix-rain linear infinite;
-  word-break: break-all;
-  white-space: normal;
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.data-stream {
+  white-space: nowrap;
+  display: inline-flex;
+  width: max-content;
+}
+
+.data-stream-left {
+  animation: scroll-left linear infinite;
+}
+
+.data-stream-right {
+  animation: scroll-right linear infinite;
+}
+
+/* CRT Scanline Effect */
+.crt-overlay {
+  background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.4) 50%);
+  background-size: 100% 4px;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { site } from "@/lib/data";
 
@@ -14,7 +14,6 @@ export function IntroLoader() {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [columns, setColumns] = useState<{ text: string; duration: number; delay: number; left: number }[]>([]);
 
   const statusMessages = [
     "ESTABLISHING CONNECTION...",
@@ -24,20 +23,25 @@ export function IntroLoader() {
     "ACCESS GRANTED",
   ];
 
-  useEffect(() => {
-    // 1. Generate 15 columns spread evenly across the screen
-    const newColumns = Array.from({ length: 15 }).map((_, i) => ({
-      text: generateRandomText(60),
-      duration: Math.random() * 4 + 4, // 4s to 8s
-      delay: Math.random() * -8, 
-      left: (i / 15) * 100, // 0% to 100% spread
-    }));
-    setColumns(newColumns);
+  // Generate 12 unique lines of scrolling data ONCE
+  const streams = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, i) => {
+      const isLeft = i % 2 === 0;
+      return {
+        text: generateRandomText(100),
+        duration: Math.random() * 10 + 10,
+        direction: isLeft ? "data-stream-left" : "data-stream-right",
+        top: `${(i / 12) * 100}%`,
+        opacity: Math.random() * 0.2 + 0.05,
+        size: Math.random() > 0.5 ? "text-[10px]" : "text-[14px]",
+        color: i % 3 === 0 ? "text-ice" : i % 3 === 1 ? "text-violet" : "text-paper",
+      };
+    });
+  }, []);
 
-    // 2. Failsafe
+  useEffect(() => {
     const failsafe = setTimeout(() => setIsLoading(false), 4500);
 
-    // 3. Progress Counter
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += Math.floor(Math.random() * 4) + 2;
@@ -73,40 +77,64 @@ export function IntroLoader() {
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[200] bg-[#020305] flex flex-col items-center justify-center overflow-hidden h-[100dvh]"
         >
-          {/* ─── ABSOLUTE MATRIX RAIN (MOBILE FRIENDLY) ─── */}
+          {/* Background Data Streams (Mobile Friendly) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {columns.map((col, i) => (
+            {streams.map((stream, i) => (
               <div
                 key={i}
-                className="matrix-column absolute top-0 text-[10px] md:text-xs text-ice/30 font-data w-4 md:w-6 h-full"
-                style={{
-                  left: `${col.left}%`,
-                  animationDuration: `${col.duration}s`,
-                  animationDelay: `${col.delay}s`,
-                }}
+                className="absolute w-full overflow-hidden"
+                style={{ top: stream.top, opacity: stream.opacity }}
               >
-                {col.text}
+                <div
+                  className={`data-stream ${stream.direction} font-data ${stream.size} ${stream.color}`}
+                  style={{ animationDuration: `${stream.duration}s` }}
+                >
+                  <span className="px-4">{stream.text}</span>
+                  <span className="px-4">{stream.text}</span>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Fading Overlays for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#020305] via-transparent to-[#020305] pointer-events-none z-10 opacity-80" />
-          
-          {/* CRT Scanlines */}
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] pointer-events-none z-10 opacity-40" />
+          {/* Depth Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020305] via-transparent to-[#020305] pointer-events-none z-10" />
+          <div className="absolute inset-0 crt-overlay pointer-events-none z-10 opacity-30" />
 
           {/* Central Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[350px] h-[250px] md:h-[350px] bg-ice/10 rounded-full blur-[80px] z-0" />
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[350px] h-[250px] md:h-[350px] rounded-full blur-[80px] z-0 transition-colors duration-500 ${isComplete ? "bg-lime/10" : "bg-ice/10"}`} />
 
-          {/* ─── CENTER HUD ─── */}
+          {/* ─── UNIQUE CYBERNETIC TARGETING CORE ─── */}
           <div className="relative z-20 flex flex-col items-center justify-center w-full max-w-lg px-6">
             
-            {/* SVG Ring */}
-            <div className="relative w-[250px] h-[250px] md:w-[300px] md:h-[300px] flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                
+            <div className="relative w-[280px] h-[280px] md:w-[340px] md:h-[340px] flex items-center justify-center">
+              
+              {/* 1. Static Outer Ring */}
+              <div className="absolute inset-0 rounded-full border border-white/5" />
+              
+              {/* 2. Fast Spinning Dashed Ring */}
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-2 rounded-full border border-dashed border-ice/20"
+              />
+
+              {/* 3. Slow Spinning Outer Dots */}
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-4 rounded-full border border-violet/10"
+              >
+                <div className="absolute top-0 left-1/2 w-1.5 h-1.5 bg-violet rounded-full shadow-[0_0_10px_#8B5CF6]" />
+                <div className="absolute bottom-0 left-1/2 w-1.5 h-1.5 bg-violet rounded-full shadow-[0_0_10px_#8B5CF6]" />
+              </motion.div>
+
+              {/* 4. Crosshairs (Targeting Lines) */}
+              <div className="absolute inset-x-[-20px] top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-ice/20 to-transparent pointer-events-none" />
+              <div className="absolute inset-y-[-20px] left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-b from-transparent via-ice/20 to-transparent pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-ice/10 rounded-full pointer-events-none" />
+
+              {/* 5. SVG Progress Ring */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <motion.circle 
                   cx="50" cy="50" r="48" 
                   fill="none" 
@@ -116,7 +144,7 @@ export function IntroLoader() {
                   strokeDashoffset={301.59 - (301.59 * progress) / 100}
                   strokeLinecap="round"
                   className="transition-all duration-300"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(34,211,238,0.5))" }}
+                  style={{ filter: "drop-shadow(0 0 10px rgba(34,211,238,0.5))" }}
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -126,26 +154,36 @@ export function IntroLoader() {
                   </linearGradient>
                 </defs>
               </svg>
-              
-              <motion.div 
-                animate={{ rotate: isComplete ? 720 : 360 }}
-                transition={{ duration: isComplete ? 1 : 15, repeat: Infinity, ease: "linear" }}
-                className={`absolute inset-2 rounded-full border border-dashed ${isComplete ? "border-lime/40" : "border-ice/20"}`}
-              />
 
-              {/* Number Counter */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                <div className="flex items-baseline gap-1">
+              {/* 6. Orbiting Glowing Node (Follows the progress) */}
+              <div 
+                className="absolute top-0 left-1/2 w-full h-full -translate-x-1/2 pointer-events-none"
+                style={{ transform: `rotate(${progress * 3.6}deg)` }}
+              >
+                <div className={`absolute top-[2px] left-1/2 -translate-x-1/2 w-2 h-2 rounded-full transition-colors duration-300 ${isComplete ? "bg-lime shadow-[0_0_15px_#A3E635]" : "bg-ice shadow-[0_0_15px_#22D3EE]"}`} />
+              </div>
+
+              {/* 7. Inner Core (Pulsing) */}
+              <motion.div 
+                animate={{ scale: [0.95, 1.05, 0.95], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className={`absolute w-40 h-40 md:w-48 md:h-48 rounded-full border flex items-center justify-center transition-colors duration-500 ${isComplete ? "border-lime/30 bg-lime/5" : "border-ice/20 bg-ice/5"}`}
+              >
+                
+                {/* Massive Number Counter */}
+                <div className="flex items-baseline gap-1 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                   <span className={`font-shout font-black text-[65px] md:text-[85px] leading-none tabular-nums tracking-tighter transition-colors duration-300 ${isComplete ? "text-lime" : "text-paper"}`}>
                     {progress.toString().padStart(3, "0")}
                   </span>
                   <span className={`font-data text-lg md:text-xl transition-colors duration-300 ${isComplete ? "text-lime" : "text-ice"}`}>%</span>
                 </div>
-              </div>
+
+              </motion.div>
+
             </div>
 
             {/* Status Message Terminal */}
-            <div className="mt-10 flex flex-col items-center gap-3 text-center bg-[#020305]/80 px-6 py-3 rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
+            <div className="mt-12 flex flex-col items-center gap-3 text-center bg-[#020305]/80 px-6 py-3 rounded-xl backdrop-blur-md border border-white/5 shadow-2xl">
               <motion.p 
                 key={currentStatus}
                 initial={{ opacity: 0, y: 5 }}
