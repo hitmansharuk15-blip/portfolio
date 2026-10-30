@@ -46,7 +46,7 @@ export function IntroLoader() {
         setProgress(100);
         setIsComplete(true);
         clearInterval(interval);
-        setTimeout(() => setIsLoading(false), 1200);
+        setTimeout(() => setIsLoading(false), 1500); // Wait 1.5s at 100%
         return;
       }
       setProgress(currentProgress);
@@ -73,8 +73,8 @@ export function IntroLoader() {
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           className="fixed inset-0 z-[200] bg-[#020305] flex flex-col items-center justify-center overflow-hidden h-[100dvh]"
         >
-          {/* ─── CSS MATRIX RAIN BACKGROUND ─── */}
-          <div className="absolute inset-0 flex justify-center gap-2 md:gap-6 overflow-hidden opacity-20 pointer-events-none">
+          {/* ─── CSS MATRIX RAIN BACKGROUND (Now always visible) ─── */}
+          <div className="absolute inset-0 flex justify-center gap-2 md:gap-6 overflow-hidden opacity-30 pointer-events-none">
             {columns.map((col, i) => (
               <div
                 key={i}
@@ -92,7 +92,7 @@ export function IntroLoader() {
           </div>
 
           {/* ─── CRT SCANLINE OVERLAY ─── */}
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px] pointer-events-none z-10 opacity-30" />
+          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px] pointer-events-none z-10 opacity-40" />
 
           {/* Central Glow behind the ring */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-ice/10 rounded-full blur-[80px] z-0" />
@@ -105,7 +105,6 @@ export function IntroLoader() {
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                 
-                {/* Animated Gradient Ring */}
                 <motion.circle 
                   cx="50" cy="50" r="48" 
                   fill="none" 
@@ -126,7 +125,6 @@ export function IntroLoader() {
                 </defs>
               </svg>
               
-              {/* Fast spinning decorative ring */}
               <motion.div 
                 animate={{ rotate: isComplete ? 720 : 360 }}
                 transition={{ duration: isComplete ? 1 : 15, repeat: Infinity, ease: "linear" }}
