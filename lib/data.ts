@@ -91,8 +91,8 @@ export const site: SiteMeta = {
   focus: "Interfaces, systems & the space between",
   email: "hello@yourSharuk.dev",
   socials: [
-    { platform: "github",   label: "GitHub",   href: "https://github.com/your-handle",      handle: "@your-handle" },
-    { platform: "linkedin", label: "LinkedIn", href: "https://linkedin.com/in/your-handle", handle: "/in/your-handle" },
+    { platform: "github",   label: "GitHub",   href: "https://github.com/hitmansharuk15-blip",      handle: "@hitmansharuk15-blip" },
+    { platform: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/sharukhan-b-78925b364?utm_source=share_via&utm_content=profile&utm_medium=member_android", handle: "Sharuk@linkedin" },
     { platform: "email",    label: "Email",    href: "hitmansharuk15@gmail.com",         handle: "hello@yourdomain.dev" },
      { platform: "instagram",label: "Instagram",href: "https://www.instagram.com/hitman___official?xtok=MTNyZXNmYjBiZnVtNQ==", handle: "hitman___official" },
   ],
