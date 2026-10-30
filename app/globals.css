@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/* ─────────── THEME TOKENS (Tailwind v4) ─────────── */
+/* Theme tokens are standard CSS variables; Tailwind utilities can reference them. */
+:root {
+  /* Colors - Dark Theme (Midnight) */
+  --color-ink:          #070707;        /* Deeper Midnight */
+  --color-deep:         #030407;        /* Subtle contrast */
+  --color-paper:        #F5F5F7;        /* Crisp White */
+  --color-muted:        #8B92A5;        /* Muted slate */
+  --color-violet:       #8B5CF6;        /* Vibrant Amethyst */
+  --color-ice:          #22D3EE;        /* Cyber Cyan */
+  --color-lime:         #A3E635;        /* Acid Green */
+  --color-glass:        rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Fonts */
+  --font-shout: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-voice: var(--font-instrument-serif), Georgia, serif;
+  --font-data:  var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Motion */
+  --ease-micro:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-reveal: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─────────────────── BASE ─────────────────── */
+@layer base {
+  *, *::before, *::after { border-color: var(--color-glass-border); }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-shout);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  ::selection { background-color: var(--color-violet); color: var(--color-paper); }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ice);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar        { width: 8px; }
+  ::-webkit-scrollbar-track  { background: var(--color-ink); }
+  ::-webkit-scrollbar-thumb  { background: var(--color-glass-border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+}
+
+/* ─────────────── UTILITIES ─────────────── */
+@layer utilities {
+  .font-shout { font-family: var(--font-shout); }
+  .font-voice { font-family: var(--font-voice); font-style: italic; }
+  .font-data  { font-family: var(--font-data); }
+
+  .container-signal {
+    width: 100%;
+    max-width: 1600px;
+    margin-inline: auto;
+    padding-inline: 6vw;
+  }
+  @media (min-width: 768px) {
+    .container-signal { padding-inline: 8vw; }
+  }
+
+  .text-hero {
+    font-size: clamp(3rem, 12vw, 10rem);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .text-section {
+    font-size: clamp(2rem, 6vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .glass {
+    background: var(--color-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-glass-border);
+    transition: background 0.5s ease, border 0.5s ease;
+  }
+
+  .grain { position: relative; isolation: isolate; }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 1;
+  }
+
+  .meta {
+    font-family: var(--font-data);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.6875rem;
+    line-height: 1;
+    color: var(--color-muted);
+  }
+}
+
+/* ─────────────── LIGHT THEME (PAPER) ─────────────── */
+/* This is now OUTSIDE the reduced-motion block, so it works! */
+html.light {
+  --color-ink:          #ecec52af;        /* Warm Cream */
+  --color-deep:         #9ed7f8;        /* Slightly darker cream */
+  --color-paper:        #121217;        /* Ink Black */
+  --color-muted:        #4B5563;        /* Slate Gray */
+  --color-violet:       #6D28D9;        /* Deep Purple */
+  --color-ice:          #0284C7;        /* Ocean Blue */
+  --color-lime:         #65A30D;        /* Olive Green */
+  --color-glass:        rgba(0, 0, 0, 0.03);
+  --color-glass-border: rgba(0, 0, 0, 0.08);
+}
+
+html.light .glass {
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+html.light .grain::after {
+  opacity: 0.02; /* Less grain in light mode */
+}
+
+/* ─────────────── REDUCED MOTION ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────── EASTER EGG: MATRIX GLITCH ─────────────── */
+@keyframes screen-shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-10px, 5px); }
+  40% { transform: translate(10px, -5px); }
+  60% { transform: translate(-5px, -10px); }
+  80% { transform: translate(5px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+
+html.glitch-mode {
+  animation: screen-shake 0.15s linear infinite;
+  filter: invert(1) hue-rotate(180deg) contrast(1.5);
+  overflow: hidden;
+}
+
+html.glitch-mode body {
+  pointer-events: none;
+}
