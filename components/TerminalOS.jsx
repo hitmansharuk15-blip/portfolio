@@ -28,12 +28,12 @@ const JOKES = [
   "Why did the developer go broke? Because he used up all his cache.",
 ];
 
-// 👇 VERIFIED TAMIL RADIO STREAMS (Direct MP3)
+// 👇 UPDATED: 100% HTTPS STREAMS (Mobile Compatible)
 const STATIONS = [
-  { name: "East FM 102.7 Tamil", url: "http://centova.radioservers.biz:8274/stream/" },
-  { name: "Paadu Nilavae Tamil", url: "http://stream.zeno.fm/8hrzqn65pa0uv" },
-  { name: "Anbu FM Tamil", url: "http://ht.stream.zeno.fm/5csru2np4bruv" },
-  { name: "StreamTheWorld Tamil", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/TL01_TAMIL_S01_SC" },
+  { name: "Tamil Hits Radio", url: "https://stream.zeno.fm/8hrzqn65pa0uv" },
+  { name: "Anbu FM Tamil", url: "https://stream.zeno.fm/5csru2np4bruv" },
+  { name: "Radio Mirchi Tamil", url: "https://stream.zeno.fm/0r0xa792kwzuv" },
+  { name: "Old Tamil Melodies", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/TL01_TAMIL_S01_SC" },
 ];
 
 export default function TerminalOS({ isOpen, onClose }) {
@@ -74,6 +74,14 @@ export default function TerminalOS({ isOpen, onClose }) {
       setIsCrashing(false);
       setTextColor("text-lime");
       setHistory([]);
+      
+      // 👇 MOBILE AUDIO UNLOCK HACK 👇
+      // This plays a silent audio file to unlock the browser's audio engine for this session
+      try {
+        const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+        silentAudio.play().catch(() => {});
+      } catch (e) {}
+
       const timer = setTimeout(() => setBooting(false), 1000);
       return () => clearTimeout(timer);
     } else {
@@ -184,8 +192,7 @@ export default function TerminalOS({ isOpen, onClose }) {
               console.warn("Playback failed:", error);
               output = [
                 " > ⚠️ Playback blocked by browser.",
-                " > Please click anywhere on the page first, then type 'music' again.",
-                " > (If it still fails, try another station with 'radio')"
+                " > Please tap the RUN button one more time to unlock audio.",
               ];
               isError = true;
             });
@@ -206,7 +213,7 @@ export default function TerminalOS({ isOpen, onClose }) {
         break;
       case "weather":
         output = [
-          " > City: TamilNadu (Villupuram)",
+          " > City: Neo-Tokyo (Villupuram)",
           " > Temp: 24°C (Perfect coding weather)",
           " > Condition: Acid Rain (Bring an umbrella)",
           " > Humidity: 80% (Coffee levels critical)",
@@ -307,7 +314,12 @@ export default function TerminalOS({ isOpen, onClose }) {
           exit={{ opacity: 0, y: 20 }}
           className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl"
         >
-          <audio ref={audioRef} className="hidden" />
+          {/* 👇 FIXED AUDIO TAG FOR MOBILE 👇 */}
+          <audio 
+            ref={audioRef} 
+            className="w-0 h-0 opacity-0 absolute pointer-events-none" 
+            playsInline 
+          />
 
           {isMatrix && (
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-black">
@@ -336,7 +348,7 @@ export default function TerminalOS({ isOpen, onClose }) {
                 <div className="w-3 h-3 rounded-full bg-yellow-500 hidden md:block" />
                 <div className="w-3 h-3 rounded-full bg-green-500 hidden md:block" />
                 <span className="ml-2 md:ml-4 text-muted text-[10px] tracking-widest flex items-center gap-2">
-                  <Terminal size={12} /> {isCrashing ? "SYSTEM_CRASH" : "SHARUK_OS v3.9"}
+                  <Terminal size={12} /> {isCrashing ? "SYSTEM_CRASH" : "SHARUK_OS v4.0"}
                 </span>
               </div>
               <button onClick={onClose} className="text-muted hover:text-white transition-colors p-2">
@@ -378,7 +390,7 @@ export default function TerminalOS({ isOpen, onClose }) {
                 </div>
               ) : booting ? (
                 <div className="flex flex-col gap-2">
-                  <p className="animate-pulse">Booting SHARUK_OS v3.9...</p>
+                  <p className="animate-pulse">Booting SHARUK_OS v4.0...</p>
                   <p>Loading kernel modules...</p>
                 </div>
               ) : (
