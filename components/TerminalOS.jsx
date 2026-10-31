@@ -22,6 +22,37 @@ import {
 } from "lucide-react";
 
 /* =========================================================================
+   00. NEW: AUDIO SYNTHESIZER ENGINE (MECHANICAL KEYBOARD)
+   ========================================================================= */
+let audioCtx = null;
+
+const playKeySound = () => {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = "square";
+    osc.frequency.setValueAtTime(600 + Math.random() * 300, audioCtx.currentTime);
+    
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.03);
+  } catch (e) {}
+};
+
+/* =========================================================================
    01. CONSTANTS, ASCII ART & STATIC DATA
    ========================================================================= */
 
@@ -42,7 +73,6 @@ const ASCII_BANNER = `
 ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝
 `;
 
-// Fixed the escape characters for the coffee ASCII art
 const ASCII_COFFEE = `
       (  )   (   )  )
        ) (   )  (  (
@@ -95,7 +125,6 @@ const STATIONS = [
   { name: "Radio Mirchi Tamil", url: "https://stream.zeno.fm/0r0xa792kwzuv" },
 ];
 
-// Safelisted Tailwind classes for the Theme Engine
 const THEMES = {
   emerald: { text: "text-emerald-400", bg: "bg-emerald-400", border: "border-emerald-400/30" },
   cyan: { text: "text-cyan-400", bg: "bg-cyan-400", border: "border-cyan-400/30" },
@@ -105,7 +134,6 @@ const THEMES = {
   blue: { text: "text-blue-400", bg: "bg-blue-400", border: "border-blue-400/30" },
 };
 
-// Virtual File System
 const FILE_SYSTEM = {
   "about.txt": "I am a Creative Developer building immersive web experiences.",
   "contact.txt": "GitHub: github.com/hitmansharuk15-blip\nLinkedIn: linkedin.com/in/your-handle",
@@ -155,7 +183,6 @@ const MatrixRain = () => {
    03. MAIN TERMINAL COMPONENT
    ========================================================================= */
 export default function TerminalOS({ isOpen, onClose }) {
-  // --- TERMINAL STATE ---
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([]);
   const [booting, setBooting] = useState(true);
@@ -166,7 +193,6 @@ export default function TerminalOS({ isOpen, onClose }) {
   const [hackProgress, setHackProgress] = useState(0);
   const [isFetchingWeather, setIsFetchingWeather] = useState(false);
   
-  // --- SYSTEM STATS STATE ---
   const [stats, setStats] = useState({ 
     cpu: 12, 
     ram: 45, 
@@ -175,29 +201,21 @@ export default function TerminalOS({ isOpen, onClose }) {
     uptime: 0 
   });
 
-  // --- AUDIO STATE ---
   const [currentStation, setCurrentStation] = useState(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // --- GAME STATE ---
   const [gameActive, setGameActive] = useState(false);
   const [playerHP, setPlayerHP] = useState(100);
   const [enemyHP, setEnemyHP] = useState(100);
 
-  // --- REFS ---
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const audioRef = useRef(null);
 
   const theme = THEMES[currentTheme];
 
-  /* -----------------------------------------------------------------------
-     WEATHER FETCH FUNCTION
-     ----------------------------------------------------------------------- */
   const fetchWeather = async () => {
     try {
-      // Fetching weather for Chennai, India (Lat: 13.0827, Lon: 80.2707)
-      // Using open-meteo.com which is free and requires no API key
       const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current_weather=true");
       const data = await res.json();
       return data.current_weather;
@@ -207,9 +225,6 @@ export default function TerminalOS({ isOpen, onClose }) {
     }
   };
 
-  /* -----------------------------------------------------------------------
-     INITIALIZATION & BOOT SEQUENCE
-     ----------------------------------------------------------------------- */
   useEffect(() => {
     if (isOpen) {
       setBooting(true);
@@ -218,7 +233,6 @@ export default function TerminalOS({ isOpen, onClose }) {
       setHistory([]);
       setGameActive(false);
       
-      // Mobile Audio Unlock
       try {
         const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
         silentAudio.play().catch(() => {});
@@ -234,9 +248,6 @@ export default function TerminalOS({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  /* -----------------------------------------------------------------------
-     SYSTEM STATS & UPTIME TICKER
-     ----------------------------------------------------------------------- */
   useEffect(() => {
     if (!isOpen || booting || isCrashing) return;
     
@@ -245,7 +256,7 @@ export default function TerminalOS({ isOpen, onClose }) {
         cpu: Math.floor(Math.random() * 30) + 5,
         ram: Math.floor(Math.random() * 20) + 40,
         net: Math.floor(Math.random() * 50) + 50,
-        battery: prev.battery > 20 ? prev.battery - 1 : 100, // Fake drain
+        battery: prev.battery > 20 ? prev.battery - 1 : 100,
         uptime: prev.uptime + 1
       }));
     }, 2000);
@@ -253,9 +264,6 @@ export default function TerminalOS({ isOpen, onClose }) {
     return () => clearInterval(interval);
   }, [isOpen, booting, isCrashing]);
 
-  /* -----------------------------------------------------------------------
-     AUTO-SCROLL TO BOTTOM
-     ----------------------------------------------------------------------- */
   useEffect(() => {
     if (scrollRef.current) {
       setTimeout(() => {
@@ -264,18 +272,12 @@ export default function TerminalOS({ isOpen, onClose }) {
     }
   }, [history, input, isCrashing, gameActive]);
 
-  /* -----------------------------------------------------------------------
-     FOCUS INPUT ON LOAD
-     ----------------------------------------------------------------------- */
   useEffect(() => {
     if (!booting && isOpen && inputRef.current && !isCrashing) {
       inputRef.current.focus();
     }
   }, [booting, isOpen, isCrashing]);
 
-  /* -----------------------------------------------------------------------
-     COMMAND PARSER & EXECUTION ENGINE
-     ----------------------------------------------------------------------- */
   const executeCommand = async () => {
     const cmd = input.trim().toLowerCase();
     if (!cmd) return;
@@ -288,7 +290,6 @@ export default function TerminalOS({ isOpen, onClose }) {
       setInput("");
     };
 
-    // --- CALCULATOR PARSER ---
     if (cmd.startsWith("calc ")) {
       try {
         const expression = cmd.replace("calc ", "");
@@ -303,7 +304,6 @@ export default function TerminalOS({ isOpen, onClose }) {
       return;
     }
 
-    // --- GAME LOGIC ---
     if (gameActive) {
       if (cmd === "attack") {
         const dmg = Math.floor(Math.random() * 20) + 10;
@@ -340,7 +340,6 @@ export default function TerminalOS({ isOpen, onClose }) {
       return;
     }
 
-    // --- STANDARD COMMANDS ---
     switch (cmd) {
       case "help":
         pushToHistory([
@@ -371,6 +370,8 @@ export default function TerminalOS({ isOpen, onClose }) {
           "",
           "  FUN & UTILITIES",
           "  calc <num> - Calculate math (calc 5+5)",
+          "  beep       - Play a terminal beep",
+          "  crypto     - Fetch live crypto prices",
           "  theme      - Change color (emerald/cyan)",
           "  quote      - Print a dev quote",
           "  joke       - Tell a joke",
@@ -388,6 +389,7 @@ export default function TerminalOS({ isOpen, onClose }) {
           "  EASTER EGGS",
           "  hack       - Initiate hack",
           "  matrix     - Toggle rain",
+          "  glitch     - Trigger visual glitch",
           "  sudo su    - Escalate",
           "  rm -rf /   - DO NOT RUN",
           "",
@@ -625,6 +627,41 @@ export default function TerminalOS({ isOpen, onClose }) {
         }, 150);
         break;
 
+      case "glitch":
+        document.documentElement.classList.add("glitch-active");
+        pushToHistory([
+          " > ⚠️ WARNING: SYSTEM INSTABILITY DETECTED...",
+          " > INITIATING VISUAL CORRUPTION..."
+        ]);
+        setTimeout(() => {
+          document.documentElement.classList.remove("glitch-active");
+        }, 2000);
+        break;
+
+      // 👇 NEW BEEP COMMAND 👇
+      case "beep":
+        playKeySound();
+        pushToHistory(" > BEEP!");
+        break;
+
+      // 👇 NEW CRYPTO COMMAND 👇
+      case "crypto":
+        pushToHistory(" > Fetching live crypto prices...");
+        try {
+          const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd");
+          const data = await res.json();
+          pushToHistory([
+            " > LIVE CRYPTO PRICES (USD)",
+            " > -------------------------",
+            ` > BTC: $${data.bitcoin.usd.toLocaleString()}`,
+            ` > ETH: $${data.ethereum.usd.toLocaleString()}`,
+            " > Data provided by CoinGecko"
+          ]);
+        } catch (e) {
+          pushToHistory(" > Failed to fetch crypto data. Network offline.", true);
+        }
+        break;
+
       case "matrix":
         setIsMatrix(!isMatrix);
         pushToHistory(isMatrix ? " > Disabling Matrix..." : " > Enabling Matrix...");
@@ -709,15 +746,15 @@ export default function TerminalOS({ isOpen, onClose }) {
   };
 
   const handleKeyDown = (e) => {
+    // 👇 NEW: PLAY SOUND ON EVERY KEYSTROKE
+    playKeySound();
+    
     if (e.key === "Enter") {
       e.preventDefault();
       executeCommand();
     }
   };
 
-  /* -----------------------------------------------------------------------
-     RENDER
-     ----------------------------------------------------------------------- */
   return (
     <AnimatePresence>
       {isOpen && (

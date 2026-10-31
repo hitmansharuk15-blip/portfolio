@@ -94,19 +94,22 @@ export function IntroHero() {
           HELLO, WORLD. — TRANSMISSION 001
         </motion.p>
 
-        {/* Enormous Name with Scramble Effect */}
+                {/* Enormous Name with Scramble Effect & Glitch Hover */}
         <motion.h1 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           className="text-hero flex flex-col"
         >
-          <ScrambleText text={site.firstName} />
-          <span className="text-muted">
-            <ScrambleText text={site.name.split(" ").slice(1).join(" ") || "S"} />
+          {/* 👇 Wrapped in the glitch hover class 👇 */}
+          <div className="glitch-text-hover cursor-crosshair w-fit">
+            <ScrambleText text={site.firstName} />
+          </div>
+          <span className="text-muted glitch-text-hover cursor-crosshair w-fit">
+            <ScrambleText text={site.name.split(" ").slice(1).join(" ") || ""} />
           </span>
         </motion.h1>
-
+        
         {/* Role Cycler & Availability */}
         <div className="mt-10 flex flex-col md:flex-row md:items-center gap-8">
           

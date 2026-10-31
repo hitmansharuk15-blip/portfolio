@@ -370,3 +370,37 @@ html.glitch-mode body {
   pointer-events: none;
   opacity: 0.3;
 }
+/* ─────────────── GLITCH ANIMATIONS ─────────────── */
+@keyframes glitch-anim {
+  0% { clip-path: inset(20% 0 30% 0); transform: translate(-2px, 2px); }
+  20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -2px); }
+  40% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 0); }
+  60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, 0); }
+  80% { clip-path: inset(30% 0 50% 0); transform: translate(-2px, 2px); }
+  100% { clip-path: inset(50% 0 30% 0); transform: translate(0); }
+}
+
+@keyframes glitch-skew {
+  0% { transform: skew(0deg); }
+  20% { transform: skew(-5deg); }
+  40% { transform: skew(5deg); }
+  60% { transform: skew(-2deg); }
+  80% { transform: skew(2deg); }
+  100% { transform: skew(0deg); }
+}
+
+/* Text Glitch (Hover) */
+.glitch-text-hover:hover {
+  animation: glitch-anim 0.3s infinite linear alternate-reverse;
+  color: var(--color-ice);
+}
+
+/* Full Screen Glitch */
+html.glitch-active {
+  animation: glitch-skew 0.2s infinite;
+}
+
+html.glitch-active body {
+  filter: invert(1) hue-rotate(90deg) contrast(1.5);
+  pointer-events: none;
+}
