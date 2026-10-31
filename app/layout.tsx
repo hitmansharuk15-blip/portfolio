@@ -7,6 +7,7 @@ import { Space_Grotesk, Instrument_Serif, JetBrains_Mono } from "next/font/googl
 import "./globals.css";
 import { site } from "@/lib/data";
 import { CommandMenu } from "@/components/CommandMenu";
+
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-space-grotesk",
@@ -28,6 +29,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  // 👇 THIS IS THE FIX: Resolves the warning and prevents broken social preview images
+  metadataBase: new URL("https://portfolio-hitmansharuk15.vercel.app"), 
+  
   title: `${site.name} — Creative Developer`,
   description: `${site.tagline} Explore the digital portfolio of ${site.name}.`,
   keywords: ["Creative Developer", "Frontend Engineer", "UI/UX Design", site.name],
@@ -36,13 +40,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://portfolio-hitmansharuk15.vercel.app", // 👈 ADD YOUR VERCEL URL HERE
+    url: "https://portfolio-hitmansharuk15.vercel.app", 
     title: `${site.name} — Creative Developer`,
     description: `${site.tagline} Explore the digital portfolio of ${site.name}.`,
     siteName: `${site.name} Portfolio`,
     images: [
       {
-        url: "/profile.jpeg", // 👈 This uses your profile image as the preview!
+        url: "/profile.jpeg", 
         width: 1200,
         height: 630,
         alt: `${site.name} Portfolio Preview`,
@@ -68,10 +72,10 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
     >
       <body className="bg-ink text-paper font-shout antialiased">
-          <IntroLoader />   
+        <IntroLoader />   
         <CustomCursor />
-          <ScrollProgress />
-          <CommandMenu />
+        <ScrollProgress />
+        <CommandMenu />
         <Navbar />
         {children}
       </body>

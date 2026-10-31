@@ -237,3 +237,14 @@ html.glitch-mode body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-ice);
 }
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.data-stream { white-space: nowrap; display: inline-flex; width: max-content; }
+.data-stream-left { animation: scroll-left linear infinite; }
+.data-stream-right { animation: scroll-right linear infinite; }
