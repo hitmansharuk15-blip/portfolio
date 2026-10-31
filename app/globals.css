@@ -248,3 +248,37 @@ html.glitch-mode body {
 .data-stream { white-space: nowrap; display: inline-flex; width: max-content; }
 .data-stream-left { animation: scroll-left linear infinite; }
 .data-stream-right { animation: scroll-right linear infinite; }
+/* ─────────────── LIGHTWEIGHT MATRIX ─────────────── */
+@keyframes matrix-fall {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.matrix-column {
+  animation: matrix-fall linear infinite;
+  position: absolute;
+  top: 0;
+  color: #00FF41;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  opacity: 0.15;
+  text-align: center;
+  word-wrap: break-word;
+  width: 20px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ─────────────── TERMINAL GLITCH EFFECT ─────────────── */
+@keyframes glitch-anim {
+  0% { clip-path: inset(20% 0 30% 0); transform: translate(-2px, 2px); }
+  20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -2px); }
+  40% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 0); }
+  60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, 0); }
+  80% { clip-path: inset(30% 0 50% 0); transform: translate(-2px, 2px); }
+  100% { clip-path: inset(50% 0 30% 0); transform: translate(0); }
+}
+.glitch-text {
+  animation: glitch-anim 0.3s infinite linear alternate-reverse;
+}

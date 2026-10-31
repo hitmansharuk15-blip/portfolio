@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Terminal, X, Shield, Cpu, HardDrive, Wifi } from "lucide-react";
+import { Terminal, X, Shield, Cpu, HardDrive, Wifi, AlertTriangle } from "lucide-react";
 
-// Fake ASCII Art
 const ASCII_LOGO = `
   ____  _   _    _    ____  _   _ _  __
  / ___|| | | |  / \\  |  _ \\| | | | |/ /
@@ -13,25 +12,79 @@ const ASCII_LOGO = `
  |____/|_| |_/_/   \\_\\_| \\_\\\\___/|_|\\_\\
 `;
 
+// Lightweight CSS Matrix Generator
+const MatrixRain = () => {
+  const [columns, setColumns] = useState([]);
+
+  useEffect(() => {
+    // Generate columns only on client to avoid SSR mismatch
+    const isMobile = window.innerWidth < 768;
+    const count = isMobile ? 10 : 25; // Less columns on mobile
+    const newCols = Array.from({ length: count }).map((_, i) => ({
+      id: i,
+      left: `${(i / count) * 100}%`,
+      duration: Math.random() * 5 + 4, // 4s to 9s
+      delay: Math.random() * -5,
+      text: Array.from({ length: 40 }, () => (Math.random() > 0.5 ? "1" : "0")).join("\n"),
+    }));
+    setColumns(newCols);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-black">
+      {columns.map((col) => (
+        <div
+          key={col.id}
+          className="matrix-column"
+          style={{
+            left: col.left,
+            animationDuration: `${col.duration}s`,
+            animationDelay: `${col.delay}s`,
+            whiteSpace: "pre-line"
+          }}
+        >
+          {col.text}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function TerminalOS({ isOpen, onClose }) {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([]);
   const [booting, setBooting] = useState(true);
   const [isMatrix, setIsMatrix] = useState(false);
+  const [isGlitching, setIsGlitching] = useState(false);
   const [stats, setStats] = useState({ cpu: 12, ram: 45, net: 88 });
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Boot sequence
+  // Audio Synth for Typing
+  const playTypeSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(400 + Math.random() * 100, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (isOpen) {
       setBooting(true);
-      const timer = setTimeout(() => setBooting(false), 1500);
+      const timer = setTimeout(() => setBooting(false), 1200);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  // Fake System Stats
   useEffect(() => {
     if (!isOpen || booting) return;
     const interval = setInterval(() => {
@@ -44,18 +97,12 @@ export default function TerminalOS({ isOpen, onClose }) {
     return () => clearInterval(interval);
   }, [isOpen, booting]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [history]);
 
-  // Focus input on load
   useEffect(() => {
-    if (!booting && isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (!booting && isOpen && inputRef.current) inputRef.current.focus();
   }, [booting, isOpen]);
 
   const handleCommand = (e) => {
@@ -74,6 +121,8 @@ export default function TerminalOS({ isOpen, onClose }) {
             "  projects   - View my work",
             "  skills     - My tech stack",
             "  contact    - Get in touch",
+            "  diag       - Run system diagnostics",
+            "  glitch     - Trigger visual glitch",
             "  matrix     - Enter the matrix",
             "  clear      - Clear terminal",
             "  exit       - Close terminal",
@@ -84,28 +133,38 @@ export default function TerminalOS({ isOpen, onClose }) {
             "> Name: Sharuk",
             "> Role: Creative Developer",
             "> Status: Building immersive digital experiences.",
-            "> Location: Villupuram, India",
           ];
           break;
         case "projects":
           output = [
-            "> [01] Neural E-Commerce (Next.js, Three.js)",
-            "> [02] Quantum Dashboard (React, D3.js)",
-            "> [03] Aether AI (Python, OpenAI)",
-            "Type 'open [id]' to view (e.g., open 01)",
+            "> [01] Neural E-Commerce",
+            "> [02] Quantum Dashboard",
+            "> [03] Aether AI",
           ];
           break;
         case "contact":
           output = [
             "> Email: hello@yourdomain.dev",
             "> GitHub: github.com/hitmansharuk15-blip",
-            "> LinkedIn: linkedin.com/in/your-handle",
           ];
           break;
+        case "diag":
+          output = [
+            "> INITIATING DIAGNOSTICS...",
+            `> CPU_LOAD: ${stats.cpu}%`,
+            `> MEMORY: ${stats.ram}%`,
+            `> NETWORK: ${stats.net}MB/s`,
+            "> SYSTEM STATUS: OPTIMAL",
+          ];
+          break;
+        case "glitch":
+          setIsGlitching(true);
+          output = ["> WARNING: VISUAL CORTEX OVERLOAD..."];
+          setTimeout(() => setIsGlitching(false), 2000);
+          break;
         case "matrix":
-          setIsMatrix(true);
-          output = ["> ENTERING THE MATRIX..."];
-          setTimeout(() => setIsMatrix(false), 4000);
+          setIsMatrix(!isMatrix);
+          output = ["> TOGGLING THE MATRIX..."];
           break;
         case "clear":
           setHistory([]);
@@ -115,12 +174,8 @@ export default function TerminalOS({ isOpen, onClose }) {
           onClose();
           return;
         default:
-          if (cmd.startsWith("open ")) {
-            output = [`> Launching project ${cmd.split(" ")[1]}...`];
-          } else {
-            output = [`Command not found: ${cmd}. Type 'help' for options.`];
-            isError = true;
-          }
+          output = [`Command not found: ${cmd}. Type 'help' for options.`];
+          isError = true;
       }
 
       setHistory((prev) => [...prev, { cmd, output, isError }]);
@@ -135,43 +190,28 @@ export default function TerminalOS({ isOpen, onClose }) {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-12 ${
-            isMatrix ? "bg-black" : "bg-black/80 backdrop-blur-xl"
-          }`}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-2 md:p-12 bg-black/90 backdrop-blur-xl"
         >
-          {/* Matrix Background Effect */}
-          {isMatrix && (
-            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden font-mono text-green-500 text-xs flex justify-between">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ y: ["-100%", "100%"] }}
-                  transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, ease: "linear" }}
-                  className="flex flex-col"
-                >
-                  {Array.from({ length: 50 }).map((_, j) => (
-                    <span key={j}>{Math.random() > 0.5 ? "1" : "0"}</span>
-                  ))}
-                </motion.div>
-              ))}
-            </div>
-          )}
+          {/* Matrix Background */}
+          {isMatrix && <MatrixRain />}
 
-          {/* Terminal Window */}
-          <div className="relative z-10 w-full max-w-4xl h-[80vh] bg-[#0A0A0A] border border-lime/30 shadow-[0_0_50px_rgba(163,230,53,0.15)] rounded-lg flex flex-col overflow-hidden font-mono text-sm md:text-base">
+          {/* Main Terminal Window */}
+          <div className={`relative z-10 w-full max-w-4xl h-[90dvh] md:h-[80vh] bg-[#0A0A0A] border border-lime/30 shadow-[0_0_50px_rgba(163,230,53,0.15)] rounded-lg flex flex-col overflow-hidden font-mono text-sm md:text-base transition-all duration-300 ${isGlitching ? "translate-x-2 translate-y-2" : ""}`}>
             
+            {/* Glitch Overlay */}
+            {isGlitching && <div className="absolute inset-0 bg-lime/20 z-50 pointer-events-none mix-blend-overlay" />}
+
             {/* CRT Scanlines */}
             <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[length:100%_4px] pointer-events-none z-20 opacity-30" />
 
-            {/* Header Bar */}
+            {/* Header */}
             <div className="bg-white/5 px-4 py-2 flex items-center justify-between border-b border-white/10 z-30">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500 cursor-pointer" onClick={onClose} />
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="ml-4 text-muted text-[10px] tracking-widest flex items-center gap-2">
-                  <Terminal size={12} /> SHARUK_OS v1.0.0
+                <span className={`ml-4 text-muted text-[10px] tracking-widest flex items-center gap-2 ${isGlitching ? "glitch-text text-lime" : ""}`}>
+                  <Terminal size={12} /> SHARUK_OS v2.0.0
                 </span>
               </div>
               <button onClick={onClose} className="text-muted hover:text-white transition-colors">
@@ -179,18 +219,18 @@ export default function TerminalOS({ isOpen, onClose }) {
               </button>
             </div>
 
-            {/* System Stats Bar */}
-            <div className="bg-black px-4 py-1 flex items-center gap-6 border-b border-lime/10 text-[10px] text-lime/70 z-30">
+            {/* Stats Bar */}
+            <div className="bg-black px-4 py-1 flex items-center gap-4 md:gap-6 border-b border-lime/10 text-[9px] md:text-[10px] text-lime/70 z-30 overflow-x-auto whitespace-nowrap">
               <span className="flex items-center gap-1"><Cpu size={10} /> CPU: {stats.cpu}%</span>
               <span className="flex items-center gap-1"><HardDrive size={10} /> RAM: {stats.ram}%</span>
               <span className="flex items-center gap-1"><Wifi size={10} /> NET: {stats.net}MB/s</span>
               <span className="ml-auto flex items-center gap-1 text-green-400"><Shield size={10} /> SECURE</span>
             </div>
 
-            {/* Terminal Body */}
+            {/* Body */}
             <div 
               ref={scrollRef}
-              className="flex-1 p-6 overflow-y-auto z-10 text-lime"
+              className="flex-1 p-4 md:p-6 overflow-y-auto z-10 text-lime"
               onClick={() => inputRef.current?.focus()}
             >
               {booting ? (
@@ -201,16 +241,14 @@ export default function TerminalOS({ isOpen, onClose }) {
                 </div>
               ) : (
                 <>
-                  {/* Welcome Logo */}
                   {history.length === 0 && (
-                    <div className="mb-8">
-                      <pre className="text-lime text-[8px] md:text-xs leading-none mb-4">{ASCII_LOGO}</pre>
+                    <div className="mb-6">
+                      <pre className="text-lime text-[6px] md:text-[10px] leading-none mb-4">{ASCII_LOGO}</pre>
                       <p className="text-white">Welcome to my interactive terminal.</p>
                       <p className="text-muted">Type <span className="text-lime font-bold">'help'</span> to see available commands.</p>
                     </div>
                   )}
 
-                  {/* Command History */}
                   {history.map((h, i) => (
                     <div key={i} className="mb-4">
                       <p className="flex gap-2 text-white">
@@ -225,7 +263,6 @@ export default function TerminalOS({ isOpen, onClose }) {
                     </div>
                   ))}
 
-                  {/* Active Input */}
                   <div className="flex items-center gap-2">
                     <span className="text-lime">➜</span>
                     <span className="text-muted">root@sharuk</span>:<span className="text-blue-400">~</span>$
@@ -234,7 +271,10 @@ export default function TerminalOS({ isOpen, onClose }) {
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={handleCommand}
+                      onKeyDown={(e) => {
+                        playTypeSound();
+                        handleCommand(e);
+                      }}
                       className="flex-1 bg-transparent outline-none border-none text-white caret-lime"
                       autoComplete="off"
                       spellCheck="false"
