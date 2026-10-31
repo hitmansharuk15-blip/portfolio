@@ -9,11 +9,17 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { SoundToggle } from "@/components/SoundToggle";
 import { playTick } from "@/lib/audio";
 
+// 👇 IMPORT THE TERMINAL
+import TerminalOS from "@/components/TerminalOS";
+
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [activeSection, setActiveSection] = useState("hero");
+  
+  // 👇 STATE FOR THE NEW TERMINAL
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   useEffect(() => {
     const checkMute = () => setIsMuted(localStorage.getItem("site-muted") !== "false");
@@ -28,7 +34,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 🚨 SLIDING PILL LOGIC: Track which section is currently on screen
+  // Track active section for sliding pill
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -38,7 +44,7 @@ export function Navbar() {
           }
         });
       },
-      { rootMargin: "-20% 0px -60% 0px" } // Trigger when section is in the top 40% of screen
+      { rootMargin: "-20% 0px -60% 0px" }
     );
 
     chapters.forEach((chapter) => {
@@ -54,14 +60,17 @@ export function Navbar() {
     else document.body.style.overflow = "unset";
   }, [isOpen]);
 
-  const openCommandMenu = () => {
+  // 👇 NEW TERMINAL TRIGGER
+  const openTerminal = () => {
     playTick(isMuted);
-    const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true });
-    document.dispatchEvent(event);
+    setIsTerminalOpen(true);
   };
 
   return (
     <>
+      {/* 👇 MOUNT THE TERMINAL OS */}
+      <TerminalOS isOpen={isTerminalOpen} onClose={() => setIsTerminalOpen(false)} />
+
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center transition-all duration-300">
         
         {/* 1. LEFT: Monogram Logo */}
@@ -96,7 +105,6 @@ export function Navbar() {
                   isActive ? "text-ink font-bold" : "text-muted hover:text-paper"
                 )}
               >
-                {/* 🚨 THE SLIDING PILL BACKGROUND 🚨 */}
                 {isActive && (
                   <motion.div
                     layoutId="nav-pill"
@@ -114,14 +122,14 @@ export function Navbar() {
         {/* 3. RIGHT: Actions */}
         <div className="flex items-center gap-2 z-50">
           
-          {/* Command Menu Button */}
+          {/* 👇 UPDATED: Terminal Button triggers the new OS */}
           <button 
-            onClick={openCommandMenu}
-            className="flex items-center gap-2 px-3 h-9 rounded-full glass text-muted hover:text-paper hover:border-ice/50 transition-all group"
-            aria-label="Open System Console"
+            onClick={openTerminal}
+            className="flex items-center gap-2 px-3 h-9 rounded-full glass text-muted hover:text-lime hover:border-lime/50 transition-all group"
+            aria-label="Open System Terminal"
           >
-            <Terminal size={14} className="group-hover:text-ice transition-colors" />
-            <span className="hidden md:inline font-data text-[9px] tracking-widest bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm">K</span>
+            <Terminal size={14} className="group-hover:text-lime transition-colors" />
+            <span className="hidden md:inline font-data text-[9px] tracking-widest bg-glass border border-glass-border px-1.5 py-0.5 rounded shadow-sm group-hover:text-lime group-hover:border-lime/30">K</span>
           </button>
 
           <div className="hidden md:flex items-center gap-2">
@@ -171,6 +179,17 @@ export function Navbar() {
                   {chapter.slug}
                 </motion.a>
               ))}
+              
+              {/* 👇 Mobile Terminal Trigger */}
+              <motion.button 
+                onClick={() => { setIsOpen(false); openTerminal(); }}
+                initial={{ opacity: 0, x: -20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                transition={{ delay: 0.4 }}
+                className="text-left text-4xl font-shout uppercase text-lime flex items-center gap-4 mt-4"
+              >
+                <Terminal size={32} /> TERMINAL
+              </motion.button>
             </nav>
 
             {/* Mobile Settings */}
