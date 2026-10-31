@@ -203,3 +203,37 @@ html.glitch-mode body {
   background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.4) 50%);
   background-size: 100% 4px;
 }
+/* ─────────────── PRO POLISH ─────────────── */
+
+/* Smoother text rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Better focus rings for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-ice);
+  outline-offset: 4px;
+}
+
+/* Custom Text Selection (When user highlights text) */
+::selection {
+  background-color: var(--color-violet);
+  color: white;
+}
+
+/* Hide scrollbar for a cleaner look on Windows */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ice);
+}

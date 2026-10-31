@@ -1,134 +1,150 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { site, interests } from "@/lib/data";
-import { MapPin, GraduationCap, Crosshair } from "lucide-react";
+import { MapPin, GraduationCap, Crosshair, Fingerprint, ArrowUpRight } from "lucide-react";
+import { playTick } from "@/lib/audio";
 
 export function AboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Parallax effect for the image
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
+  const y = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]); 
+
+  const [isMuted, setIsMuted] = useState(true);
+  useEffect(() => {
+    const checkMute = () => setIsMuted(localStorage.getItem("site-muted") !== "false");
+    checkMute();
+    window.addEventListener("sound-toggled", checkMute);
+    return () => window.removeEventListener("sound-toggled", checkMute);
+  }, []);
 
   return (
     <section id="about" className="relative py-32 bg-deep overflow-hidden border-t border-glass-border" ref={containerRef}>
+      
+      {/* Giant Background Watermark */}
+      <div className="absolute top-20 left-0 w-full overflow-hidden pointer-events-none select-none flex justify-center opacity-[0.02]">
+        <h2 className="text-[20vw] font-shout font-black uppercase tracking-tighter text-paper whitespace-nowrap">
+          IDENTITY
+        </h2>
+      </div>
+
       <div className="container-signal relative z-10">
         
-        {/* Section Header */}
-        <div className="mb-20">
-          <p className="meta text-ice mb-6 flex items-center gap-3">
-            <span className="w-8 h-[1px] bg-ice/50" />
-            CHAPTER 01 — IDENTITY
-          </p>
-          
-          <h2 className="text-section max-w-4xl">
-            I don't just write code.<br />
-            I create{" "}
-            <motion.span 
-              initial={{ opacity: 0, fontStyle: "normal" }}
-              whileInView={{ opacity: 1, fontStyle: "italic" }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="font-voice text-ice lowercase tracking-normal text-[1.1em] inline-block"
-            >
-              experiences
-            </motion.span>
-            .
-          </h2>
+        {/* Editorial Header */}
+        <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-glass-border pb-8">
+          <div>
+            <p className="meta text-ice mb-4 flex items-center gap-3">
+              <span className="w-8 h-[1px] bg-ice/50" />
+              CHAPTER 01 — IDENTITY
+            </p>
+            <h2 className="text-section max-w-2xl">
+              I don't just write code.<br />
+              I create{" "}
+              <motion.span 
+                initial={{ opacity: 0, fontStyle: "normal" }}
+                whileInView={{ opacity: 1, fontStyle: "italic" }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="font-voice text-ice lowercase tracking-normal text-[1.1em] inline-block"
+              >
+                experiences
+              </motion.span>
+              .
+            </h2>
+          </div>
+          <div className="flex items-center gap-2 text-ice/50 hidden md:flex">
+            <Fingerprint size={32} strokeWidth={1} />
+            <div className="flex flex-col">
+              <span className="font-data text-[10px] tracking-widest">BIOMETRIC_SCAN</span>
+              <span className="font-data text-[10px] tracking-widest text-lime animate-pulse">MATCH_FOUND</span>
+            </div>
+          </div>
         </div>
 
-        {/* Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        {/* BENTO GRID LAYOUT */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           
-          {/* Left: Story & Meta */}
-          <div className="flex flex-col gap-12">
-            <div className="space-y-6 text-lg text-muted leading-relaxed">
-              {site.story.map((paragraph, i) => (
-                <motion.p
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                >
-                  {paragraph}
-                </motion.p>
-              ))}
-            </div>
-
-            {/* Meta Details */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-glass-border"
-            >
-              <div className="flex flex-col gap-2">
-                <span className="meta flex items-center gap-2"><MapPin size={12}/> Location</span>
-                <span className="font-shout text-paper">{site.location}</span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="meta flex items-center gap-2"><GraduationCap size={12}/> Education</span>
-                <span className="font-shout text-paper">{site.education}</span>
-              </div>
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <span className="meta flex items-center gap-2"><Crosshair size={12}/> Focus</span>
-                <span className="font-shout text-paper">{site.focus}</span>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right: Image & Floating Card */}
-          <div className="relative">
-                    {/* Portrait (Parallax) */}
-            <motion.div 
-              style={{ y }}
-              className="relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden rounded-2xl bg-ink border border-glass-border group"
-            >
-              {/* 1. Your Actual Image */}
+          {/* Card 1: The Image (Tall) */}
+          <div className="md:col-span-1 md:row-span-2 relative h-[400px] md:h-[600px] rounded-3xl overflow-hidden border border-glass-border group">
+            <motion.div style={{ y }} className="absolute inset-0 w-full h-[110%] -top-[5%]">
               <Image
                 src="/profile.jpeg"
                 alt={`Portrait of ${site.name}`}
                 fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                priority
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover object-[center_25%] transition-transform duration-1000 group-hover:scale-105"
               />
-              
-              {/* 2. Duotone Color Overlay (Violet/Ice tint) */}
-              <div className="absolute inset-0 bg-gradient-to-br from-violet/30 to-ice/10 mix-blend-color z-10 pointer-events-none" />
-              
-              {/* 3. Dark Fade at the bottom so the floating card pops */}
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent z-20 pointer-events-none" />
             </motion.div>
-            {/* Floating Interests Card */}
-            <motion.div
-              initial={{ opacity: 0, x: -20, y: 20 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="absolute -bottom-8 -left-4 sm:-left-12 glass p-6 rounded-xl max-w-[280px] z-30 shadow-2xl"
-            >
-              <p className="meta text-paper mb-4">PERSONAL INTERESTS</p>
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest, i) => (
-                  <span 
-                    key={i} 
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-ink/50 border border-glass-border rounded-full text-xs font-shout text-muted hover:text-paper hover:border-paper/30 transition-colors cursor-default"
-                  >
-                    <span className="opacity-70">{interest.emoji}</span>
-                    {interest.label}
-                  </span>
-                ))}
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent pointer-events-none" />
+            
+            {/* Image Overlay Content */}
+            <div className="absolute bottom-6 left-6 right-6">
+              <p className="meta text-ice mb-1">CURRENTLY</p>
+              <p className="font-shout font-bold text-paper text-xl">{site.availability}</p>
+            </div>
+          </div>
+
+          {/* Card 2: The Bio (Wide) */}
+          <div className="md:col-span-2 glass rounded-3xl p-8 md:p-12 border border-glass-border relative overflow-hidden flex flex-col justify-center">
+            <div className="absolute top-0 right-0 p-6 opacity-10">
+              <span className="font-shout font-black text-8xl">01</span>
+            </div>
+            <h3 className="font-data text-xs text-ice tracking-widest mb-6">SUBJECT_OVERVIEW</h3>
+            <div className="space-y-6 text-lg md:text-xl text-muted leading-relaxed font-light">
+              {site.story.map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* Card 3: Meta Details (Grid) */}
+          <div className="md:col-span-1 glass rounded-3xl p-8 border border-glass-border flex flex-col justify-center gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin size={16} className="text-ice" />
+                <span className="font-data text-[10px] text-muted tracking-widest">LOCATION</span>
               </div>
-            </motion.div>
+              <p className="font-shout font-bold text-paper">{site.location}</p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <GraduationCap size={16} className="text-ice" />
+                <span className="font-data text-[10px] text-muted tracking-widest">EDUCATION</span>
+              </div>
+              <p className="font-shout font-bold text-paper">{site.education}</p>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Crosshair size={16} className="text-lime" />
+                <span className="font-data text-[10px] text-muted tracking-widest">FOCUS</span>
+              </div>
+              <p className="font-shout font-bold text-paper">{site.focus}</p>
+            </div>
+          </div>
+
+          {/* Card 4: RPG Stats (Compact) */}
+          <div className="md:col-span-1 glass rounded-3xl p-8 border border-glass-border relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6 border-b border-glass-border pb-4">
+              <span className="font-data text-[10px] text-ice tracking-widest">TRAITS</span>
+              <span className="font-data text-[10px] text-muted">LVL.99</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {interests.map((interest, i) => (
+                <span 
+                  key={i}
+                  onMouseEnter={() => playTick(isMuted)}
+                  className="px-3 py-1.5 bg-ink/50 border border-glass-border rounded-lg text-xs font-shout font-bold text-muted hover:text-ice hover:border-ice/50 transition-colors cursor-crosshair flex items-center gap-2"
+                >
+                  <span>{interest.emoji}</span>
+                  {interest.label}
+                </span>
+              ))}
+            </div>
           </div>
 
         </div>
