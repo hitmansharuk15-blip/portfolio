@@ -93,9 +93,6 @@ const STATIONS = [
   { name: "Tamil Hits Radio", url: "https://stream.zeno.fm/8hrzqn65pa0uv" },
   { name: "Anbu FM Tamil", url: "https://stream.zeno.fm/5csru2np4bruv" },
   { name: "Radio Mirchi Tamil", url: "https://stream.zeno.fm/0r0xa792kwzuv" },
-  { name: "East FM 102.7 Tamil", url: "http://centova.radioservers.biz:8274/stream/" },
-  { name: "Bollywood Hits (Zeno)", url: "https://stream.zeno.fm/rx7v61v7wp8uv" },
-  { name: "Indian Chill (SomaFM)", url: "https://ice1.somafm.com/suburbsofgoa-128-mp3" },
 ];
 
 // Safelisted Tailwind classes for the Theme Engine
