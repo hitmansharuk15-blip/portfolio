@@ -74,7 +74,7 @@ export default function RootLayout({
       <body className="bg-ink text-paper font-shout antialiased">
         <IntroLoader />   
         <CustomCursor />
-        <ScrollProgress />
+        <ScrollProgress />s
         <CommandMenu />
         <Navbar />
         {children}

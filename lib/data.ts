@@ -87,7 +87,7 @@ export const site: SiteMeta = {
   tagline: "I don't just write code. I create experiences.",
   availability: "Available for opportunities",
   location: "Villupuram, India",
-  education: "Bsc, Computer Science",
+  education: "Msc, Computer Science",
   focus: "Interfaces, systems & the space between",
   email: "hello@yourSharuk.dev",
   socials: [
@@ -216,7 +216,7 @@ export const projects: Project[] = [
 /* ───────────────────────── JOURNEY ───────────────────────── */
 
 export const journey: JourneyEntry[] = [
-  { year: "2022", title: "Started Bsc, Computer Science", description: "First exposure to systems and the web.", current: false },
+  { year: "2023", title: "Started Msc, Computer Science", description: "First exposure to systems and the web.", current: false },
   { year: "2024", title: "Learned React & design systems",   description: "Shifted from making things work to making things feel right." },
   { year: "2026", title: "Building in public",               description: "Shipping small, honest projects. Currently learning motion & interaction design.", current: true },
 ];
